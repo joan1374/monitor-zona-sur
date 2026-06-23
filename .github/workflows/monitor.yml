@@ -1,0 +1,45 @@
+name: Monitor Convocatorias Zona Sur
+
+on:
+  schedule:
+    - cron: "0 12-23 * * 1-5"
+    - cron: "0 0-1  * * 2-6"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  monitorear:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: pip install requests beautifulsoup4 lxml
+
+      - name: Ejecutar monitor
+        env:
+          EMAIL_REMITENTE:    ${{ secrets.EMAIL_REMITENTE }}
+          EMAIL_PASSWORD:     ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_DESTINATARIO: ${{ secrets.EMAIL_DESTINATARIO }}
+          WA_PHONE:           ${{ secrets.WA_PHONE }}
+          WA_APIKEY:          ${{ secrets.WA_APIKEY }}
+          KEYWORDS:           ${{ secrets.KEYWORDS }}
+        run: python scripts/monitor.py
+
+      - name: Guardar cambios
+        run: |
+          git config user.name  "Monitor Bot"
+          git config user.email "monitor-bot@noreply"
+          git add scripts/vistos.json dashboard/data.json || true
+          git diff --cached --quiet || git commit -m "🤖 Actualización $(date '+%Y-%m-%d %H:%M')"
+          git push
