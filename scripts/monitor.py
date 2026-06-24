@@ -54,9 +54,11 @@ def obtener_seace():
             soup = BeautifulSoup(r.text, "html.parser")
             for fila in soup.select("table tbody tr")[:20]:
                 celdas = fila.find_all("td")
-                if len(celdas) < 3: continue
+                if len(celdas) < 3:
+                    continue
                 objeto = celdas[2].get_text(strip=True)
-                if not coincide(objeto): continue
+                if not coincide(objeto):
+                    continue
                 convs.append({
                     "fuente":"SEACE","region":region,
                     "numero":celdas[0].get_text(strip=True),
@@ -79,13 +81,15 @@ def obtener_peru_compras():
         soup = BeautifulSoup(r.text, "html.parser")
         for fila in soup.select("table tr")[1:40]:
             celdas = fila.find_all("td")
-            if len(celdas) < 2: continue
+            if len(celdas) < 2:
+                continue
             entidad = celdas[0].get_text(strip=True)
-            objeto  = celdas[1].get_text(strip=True)
-            region  = next((reg for reg in REGIONES if reg.lower() in entidad.lower()), None)
-            if not region or not coincide(objeto): continue
+            objeto = celdas[1].get_text(strip=True)
+            region = next((reg for reg in REGIONES if reg.lower() in entidad.lower()), None)
+            if not region or not coincide(objeto):
+                continue
             convs.append({
-                "fuente":"Perú Compras","region":region,
+                "fuente":"Peru Compras","region":region,
                 "numero":celdas[2].get_text(strip=True) if len(celdas)>2 else "",
                 "entidad":entidad,"objeto":objeto,
                 "monto":celdas[3].get_text(strip=True) if len(celdas)>3 else "",
@@ -93,7 +97,7 @@ def obtener_peru_compras():
                 "url":"https://www.perucompras.gob.pe",
             })
     except Exception as e:
-        print(f"[PerúCompras] {e}")
+        print(f"[PeruCompras] {e}")
     return convs
 
 MINERAS = [
@@ -113,7 +117,8 @@ def obtener_mineras():
             items = soup.select(".convocatoria,.licitacion,.tender,article,.card")
             for item in items[:10]:
                 texto = item.get_text(separator=" ", strip=True)
-                if len(texto) < 10 or not coincide(texto): continue
+                if len(texto) < 10 or not coincide(texto):
+                    continue
                 link = item.find("a")
                 href = link["href"] if link and link.get("href") else m["url"]
                 if href.startswith("/"):
@@ -132,46 +137,67 @@ def obtener_mineras():
     return convs
 
 def enviar_email(nuevas):
-    if not EMAIL_REMITENTE: return
-    filas = "".join(f"<tr><td style='padding:8px;border-bottom:1px solid #eee'>{c['fuente']}</td>"
-        f"<td style='padding:8px;border-bottom:1px solid #eee'>{c['region']}</td>"
-        f"<td style='padding:8px;border-bottom:1px solid #eee'>{c['entidad']}</td>"
-        f"<td style='padding:8px;border-bottom:1px solid #eee'>{c['objeto'][:100]}</td>"
-        f"<td style='padding:8px;border-bottom:1px solid #eee'><a href='{c['url']}'>Ver</a></td></tr>"
-        for c in nuevas)
-    cuerpo = f"""<html><body style='font-family:Arial,sans-serif'>
-    <div style='background:#185FA5;color:white;padding:20px;border-radius:8px 8px 0 0'>
-    <h2>🔔 {len(nuevas)} nueva(s) convocatoria(s) — Zona Sur</h2>
-    <p>{datetime.now().strftime('%d/%m/%Y %H:%M')}</p></div>
-    <div style='border:1px solid #ddd;padding:20px'>
-    <table style='width:100%;border-collapse:collapse;font-size:13px'>
-    <thead style='background:#f5f5f5'><tr>
-    <th style='padding:8px;text-align:left'>Fuente</th>
-    <th style='padding:8px;text-align:left'>Región</th>
-    <th style='padding:8px;text-align:left'>Entidad</th>
-    <th style='padding:8px;text-align:left'>Objeto</th>
-    <th style='padding:8px;text-align:left'>Link</th>
-    </tr></thead><tbody>{filas}</tbody></table></div>
-    </body></html>"""
+    if not EMAIL_REMITENTE:
+        return
+    filas = ""
+    for c in nuevas:
+        filas += (
+            f"<tr>"
+            f"<td style='padding:8px;border-bottom:1px solid #eee'>{c['fuente']}</td>"
+            f"<td style='padding:8px;border-bottom:1px solid #eee'>{c['region']}</td>"
+            f"<td style='padding:8px;border-bottom:1px solid #eee'>{c['entidad']}</td>"
+            f"<td style='padding:8px;border-bottom:1px solid #eee'>{c['objeto'][:100]}</td>"
+            f"<td style='padding:8px;border-bottom:1px solid #eee'><a href='{c['url']}'>Ver</a></td>"
+            f"</tr>"
+        )
+    cuerpo = (
+        "<html><body style='font-family:Arial,sans-serif'>"
+        "<div style='background:#185FA5;color:white;padding:20px;border-radius:8px 8px 0 0'>"
+        f"<h2>🔔 {len(nuevas)} nueva(s) convocatoria(s) Zona Sur</h2>"
+        f"<p>{datetime.now().strftime('%d/%m/%Y %H:%M')}</p>"
+        "</div>"
+        "<div style='border:1px solid #ddd;padding:20px'>"
+        "<table style='width:100%;border-collapse:collapse;font-size:13px'>"
+        "<thead style='background:#f5f5f5'><tr>"
+        "<th style='padding:8px;text-align:left'>Fuente</th>"
+        "<th style='padding:8px;text-align:left'>Region</th>"
+        "<th style='padding:8px;text-align:left'>Entidad</th>"
+        "<th style='padding:8px;text-align:left'>Objeto</th>"
+        "<th style='padding:8px;text-align:left'>Link</th>"
+        f"</tr></thead><tbody>{filas}</tbody></table>"
+        "</div></body></html>"
+    )
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = f"🔔 {len(nuevas)} convocatoria(s) Zona Sur — {datetime.now().strftime('%d/%m/%Y %H:%M')}"
+    msg["Subject"] = f"🔔 {len(nuevas)} convocatoria(s) Zona Sur {datetime.now().strftime('%d/%m/%Y %H:%M')}"
     msg["From"] = EMAIL_REMITENTE
-    msg["To"]   = EMAIL_DESTINATARIO
+    msg["To"] = EMAIL_DESTINATARIO
     msg.attach(MIMEText(cuerpo, "html"))
     try:
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as s:
             s.login(EMAIL_REMITENTE, EMAIL_PASSWORD)
             s.sendmail(EMAIL_REMITENTE, EMAIL_DESTINATARIO, msg.as_string())
-        print(f"[Email] Enviado — {len(nuevas)} convocatorias")
+        print(f"[Email] Enviado {len(nuevas)} convocatorias")
     except Exception as e:
         print(f"[Email] Error: {e}")
 
 def enviar_whatsapp(nuevas):
-    if not WA_PHONE or WA_APIKEY == "0": return
-    resumen = "\n".join(f"• {c['fuente']} | {c['region']}: {c['objeto'][:60]}..." for c in nuevas[:5])
-    if len(nuevas) > 5: resumen += f"\n...y {len(nuevas)-5} más."
-    msg = f"🔔 *{len(nuevas)} convocatoria(s) — Zona Sur*\n{datetime.now().strftime('%d/%m/%Y %H:%M')}\n\n{resumen}"
-    url = f"https://api.callmebot.com/whatsapp.php?phone={WA_PHONE}&text={requests.utils.quote(msg)}&apikey={WA_APIKEY}"
+    if not WA_PHONE or WA_APIKEY == "0":
+        return
+    resumen = "\n".join(
+        f"- {c['fuente']} | {c['region']}: {c['objeto'][:60]}..."
+        for c in nuevas[:5]
+    )
+    if len(nuevas) > 5:
+        resumen += f"\n...y {len(nuevas)-5} mas."
+    msg = (
+        f"🔔 {len(nuevas)} convocatoria(s) Zona Sur\n"
+        f"{datetime.now().strftime('%d/%m/%Y %H:%M')}\n\n"
+        f"{resumen}"
+    )
+    url = (
+        f"https://api.callmebot.com/whatsapp.php"
+        f"?phone={WA_PHONE}&text={requests.utils.quote(msg)}&apikey={WA_APIKEY}"
+    )
     try:
         r = requests.get(url, timeout=15)
         print(f"[WhatsApp] {'OK' if r.status_code==200 else 'Error '+str(r.status_code)}")
@@ -179,14 +205,14 @@ def enviar_whatsapp(nuevas):
         print(f"[WhatsApp] {e}")
 
 def main():
-    print(f"\n{'='*50}")
-    print(f"Monitor Zona Sur — {datetime.now().strftime('%d/%m/%Y %H:%M')}")
-    print(f"{'='*50}\n")
+    print("=" * 50)
+    print(f"Monitor Zona Sur {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+    print("=" * 50)
     vistos = cargar_vistos()
     print("[1/3] Consultando SEACE...")
     seace = obtener_seace()
     print(f"      {len(seace)} registros")
-    print("[2/3] Consultando Perú Compras...")
+    print("[2/3] Consultando Peru Compras...")
     peru = obtener_peru_compras()
     print(f"      {len(peru)} registros")
     print("[3/3] Consultando mineras...")
@@ -194,8 +220,23 @@ def main():
     print(f"      {len(minero)} registros")
     todas = seace + peru + minero
     nuevas = [c for c in todas if id_conv(c) not in vistos]
-    print(f"\n✅ Total: {len(todas)} | Nuevas: {len(nuevas)}\n")
+    print(f"Total: {len(todas)} | Nuevas: {len(nuevas)}")
     if nuevas:
         enviar_email(nuevas)
         enviar_whatsapp(nuevas)
-        for c
+        for c in nuevas:
+            vistos.add(id_conv(c))
+        guardar_vistos(vistos)
+    else:
+        print("Sin convocatorias nuevas.")
+    os.makedirs("dashboard", exist_ok=True)
+    with open("dashboard/data.json", "w", encoding="utf-8") as f:
+        json.dump({
+            "actualizado": datetime.now().isoformat(),
+            "total": len(todas),
+            "convocatorias": todas[-100:]
+        }, f, ensure_ascii=False, indent=2)
+    print("Completado.")
+
+if __name__ == "__main__":
+    main()
