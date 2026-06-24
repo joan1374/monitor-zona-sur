@@ -1,116 +1,166 @@
 {
-  "actualizado": "2026-06-24T23:43:23.071731",
-  "total": 11,
+  "actualizado": "2026-06-24T23:57:36.610134",
+  "total": 16,
   "convocatorias": [
     {
-      "fuente": "Antapaccay",
+      "fuente": "Antapaccay Glencore",
       "region": "Cusco",
       "numero": "",
-      "entidad": "Antapaccay",
+      "entidad": "Antapaccay Glencore",
       "objeto": "SALTAR NAVEGACIÓN Mapa mundial Nuestros sitios Contacto Glencore XPS Glencore Technology ZipaTank HyperSparge IsaKidd IsaMill ISASMELT Jameson Cell Albion Process Glencore en Sudáfrica Kamoto Copper C",
       "monto": "",
       "fecha": "24/06/2026",
       "url": "https://www.antapaccay.com.pe/"
     },
     {
-      "fuente": "Las Bambas",
+      "fuente": "Las Bambas MMG",
       "region": "Cusco",
       "numero": "",
-      "entidad": "Las Bambas",
+      "entidad": "Las Bambas MMG",
       "objeto": "Registro para Proveedores",
       "monto": "",
       "fecha": "24/06/2026",
       "url": "https://www.lasbambas.com/proveedores-registro-de-proveedores"
     },
     {
-      "fuente": "Las Bambas",
+      "fuente": "Las Bambas MMG",
       "region": "Cusco",
       "numero": "",
-      "entidad": "Las Bambas",
+      "entidad": "Las Bambas MMG",
       "objeto": "Instrucciones para Entrega de Bienes",
       "monto": "",
       "fecha": "24/06/2026",
       "url": "https://www.lasbambas.com/instrucciones-generales-para-entrega-de-bienes"
     },
     {
-      "fuente": "Las Bambas",
+      "fuente": "Las Bambas MMG",
       "region": "Cusco",
       "numero": "",
-      "entidad": "Las Bambas",
+      "entidad": "Las Bambas MMG",
       "objeto": "Instrucciones generales para la entrega de servicios",
       "monto": "",
       "fecha": "24/06/2026",
       "url": "https://www.lasbambas.com/instrucciones-generales-para-entrega-de-servicios"
     },
     {
-      "fuente": "Las Bambas",
+      "fuente": "Las Bambas MMG",
       "region": "Cusco",
       "numero": "",
-      "entidad": "Las Bambas",
+      "entidad": "Las Bambas MMG",
       "objeto": "Información de Interés",
       "monto": "",
       "fecha": "24/06/2026",
       "url": "https://www.lasbambas.com/proveedores-informacion-de-interes"
     },
     {
-      "fuente": "Las Bambas",
+      "fuente": "Las Bambas MMG",
       "region": "Cusco",
       "numero": "",
-      "entidad": "Las Bambas",
+      "entidad": "Las Bambas MMG",
       "objeto": "Instrucciones de Atención y Pago de Facturas",
       "monto": "",
       "fecha": "24/06/2026",
       "url": "https://www.lasbambas.com/proveedores-instrucciones-de-atencion-y-pago-de-facturas"
     },
     {
-      "fuente": "Las Bambas",
+      "fuente": "Las Bambas MMG",
       "region": "Cusco",
       "numero": "",
-      "entidad": "Las Bambas",
+      "entidad": "Las Bambas MMG",
       "objeto": "Mi Acceso a Las Bambas",
       "monto": "",
       "fecha": "24/06/2026",
       "url": "https://www.lasbambas.com/proveedores-mi-acceso-las-bambas"
     },
     {
-      "fuente": "Las Bambas",
+      "fuente": "Las Bambas MMG",
       "region": "Cusco",
       "numero": "",
-      "entidad": "Las Bambas",
+      "entidad": "Las Bambas MMG",
       "objeto": "Directorio de Proveedores Locales",
       "monto": "",
       "fecha": "24/06/2026",
       "url": "https://www.lasbambas.com/userfiles/cms/pagina/documento/directorio-empresarios-locales.pdf"
     },
     {
-      "fuente": "Las Bambas",
+      "fuente": "Las Bambas MMG",
       "region": "Cusco",
       "numero": "",
-      "entidad": "Las Bambas",
+      "entidad": "Las Bambas MMG",
       "objeto": "Nuevo Servicio Radio P25",
       "monto": "",
       "fecha": "24/06/2026",
       "url": "https://www.lasbambas.com/proveedores-nuevo-servicio-radio-p25"
     },
     {
-      "fuente": "Las Bambas",
+      "fuente": "Las Bambas MMG",
       "region": "Cusco",
       "numero": "",
-      "entidad": "Las Bambas",
+      "entidad": "Las Bambas MMG",
       "objeto": "Compliance y Ética Empresarial",
       "monto": "",
       "fecha": "24/06/2026",
       "url": "https://www.lasbambas.com/proveedores-compliance-y-etica-empresarial"
     },
     {
-      "fuente": "Las Bambas",
+      "fuente": "Las Bambas MMG",
       "region": "Cusco",
       "numero": "",
-      "entidad": "Las Bambas",
+      "entidad": "Las Bambas MMG",
       "objeto": "Mi Sistema Integrado SHE",
       "monto": "",
       "fecha": "24/06/2026",
       "url": "https://www.lasbambas.com/proveedores-mi-sistema-integrado-she"
+    },
+    {
+      "fuente": "Tia Maria Anglo American",
+      "region": "Arequipa",
+      "numero": "",
+      "entidad": "Tia Maria Anglo American",
+      "objeto": "06:00 GMT ON 23 Jul 2026 Q2 2026 Production Report Investor calendar",
+      "monto": "",
+      "fecha": "24/06/2026",
+      "url": "https://www.angloamerican.com/investors/investor-calendar"
+    },
+    {
+      "fuente": "Tia Maria Anglo American",
+      "region": "Arequipa",
+      "numero": "",
+      "entidad": "Tia Maria Anglo American",
+      "objeto": "Our websites Australia Brazil Chile China Finland Peru Singapore South Africa Group Foundation De Beers Group Kumba Iron Ore United Kingdom",
+      "monto": "",
+      "fecha": "24/06/2026",
+      "url": "https://australia.angloamerican.com/"
+    },
+    {
+      "fuente": "Tia Maria Anglo American",
+      "region": "Arequipa",
+      "numero": "",
+      "entidad": "Tia Maria Anglo American",
+      "objeto": "Sign up for alerts Be notified of any news, reports or updates straight to your email address Sign up and get the latest news",
+      "monto": "",
+      "fecha": "24/06/2026",
+      "url": "https://www.angloamerican.com/site-services/email-alerts"
+    },
+    {
+      "fuente": "Tia Maria Anglo American",
+      "region": "Arequipa",
+      "numero": "",
+      "entidad": "Tia Maria Anglo American",
+      "objeto": "Stay in touch Keep up to date on social media or contact us with any other information Facebook LinkedIn Twitter Instagram YouTube Glassdoor",
+      "monto": "",
+      "fecha": "24/06/2026",
+      "url": "https://www.angloamerican.com/site-services/contact-us"
+    },
+    {
+      "fuente": "Tia Maria Anglo American",
+      "region": "Arequipa",
+      "numero": "",
+      "entidad": "Tia Maria Anglo American",
+      "objeto": "Privacy policy Accessibility Terms and conditions Site map Cookie policy Cookies Settings YourVoice UK Modern Slavery Act Copyright ©",
+      "monto": "",
+      "fecha": "24/06/2026",
+      "url": "https://www.angloamerican.com/site-services/privacy-policy"
     }
   ]
 }
