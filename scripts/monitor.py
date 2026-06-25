@@ -5,30 +5,33 @@ from email.mime.text import MIMEText
 from bs4 import BeautifulSoup
 import time
 
-EMAIL_REMITENTE    = os.environ.get("EMAIL_REMITENTE", "")
-EMAIL_PASSWORD     = os.environ.get("EMAIL_PASSWORD", "")
+EMAIL_REMITENTE = os.environ.get("EMAIL_REMITENTE", "")
+EMAIL_PASSWORD = os.environ.get("EMAIL_PASSWORD", "")
 EMAIL_DESTINATARIO = os.environ.get("EMAIL_DESTINATARIO", "")
-WA_PHONE           = os.environ.get("WA_PHONE", "")
-WA_APIKEY          = os.environ.get("WA_APIKEY", "")
-KEYWORDS           = os.environ.get("KEYWORDS", "").split(",")
+WA_PHONE = os.environ.get("WA_PHONE", "")
+WA_APIKEY = os.environ.get("WA_APIKEY", "")
+KEYWORDS = os.environ.get("KEYWORDS", "").split(",")
 
-DEPARTAMENTOS = {
+REGIONES = {
     "Arequipa": "04",
-    "Cusco":    "08",
-    "Moquegua": "18",
-    "Puno":     "21",
-    "Tacna":    "23",
+    "Moquegua": "15",
+    "Cusco": "08",
+    "Puno": "21",
+    "Tacna": "23",
 }
-
 SEEN_FILE = "scripts/vistos.json"
 
 def cargar_vistos():
     if os.path.exists(SEEN_FILE):
-        with open(SEEN_FILE) as f:
-            return set(json.load(f))
+        try:
+            with open(SEEN_FILE, "r") as f:
+                return set(json.load(f))
+        except:
+            return set()
     return set()
 
 def guardar_vistos(vistos):
+    os.makedirs(os.path.dirname(SEEN_FILE), exist_ok=True)
     with open(SEEN_FILE, "w") as f:
         json.dump(list(vistos), f)
 
@@ -43,128 +46,84 @@ def coincide(texto):
 
 def obtener_seace():
     convs = []
-    headers = {"User-Agent":"Mozilla/5.0","Content-Type":"application/x-www-form-urlencoded"}
-    for depto, cod in DEPARTAMENTOS.items():
+    for region, cod in REGIONES.items():
         try:
             url = "https://prod2.seace.gob.pe/seacebus-uiwd-pub/buscadorPublico/buscadorPublico"
             payload = {
                 "codigoDepartamento": cod,
                 "estadoProceso": "ACT",
-                "fechaInicio": (datetime.now()-timedelta(days=3)).strftime("%d/%m/%Y"),
-                "fechaFin": datetime.now().strftime("%d/%m/%Y"),
+                "fechaInicio": (datetime.now() - timedelta(days=2)).strftime("%d/%m/%Y"),
+                "fechaFin": datetime.now().strftime("%d/%m/%Y")
             }
-            r = requests.post(url, data=payload, headers=headers, timeout=25)
+            r = requests.post(url, data=payload, timeout=20, headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+                "Content-Type": "application/x-www-form-urlencoded"
+            })
             soup = BeautifulSoup(r.text, "html.parser")
-            filas = soup.select("table tbody tr")
-            print(f"  SEACE {depto}: {len(filas)} filas")
-            for fila in filas[:30]:
+            for fila in soup.select("table tbody tr")[:20]:
                 celdas = fila.find_all("td")
-                if len(celdas) < 3:
-                    continue
+                if len(celdas) < 3: continue
                 objeto = celdas[2].get_text(strip=True)
-                if not objeto or not coincide(objeto):
-                    continue
+                if not coincide(objeto): continue
                 convs.append({
                     "fuente": "SEACE",
-                    "region": depto,
+                    "region": region,
                     "numero": celdas[0].get_text(strip=True),
                     "entidad": celdas[1].get_text(strip=True),
                     "objeto": objeto,
                     "monto": celdas[3].get_text(strip=True) if len(celdas) > 3 else "",
-                    "fecha": celdas[4].get_text(strip=True) if len(celdas) > 4 else datetime.now().strftime("%d/%m/%Y"),
-                    "url": "https://seace.gob.pe",
+                    "fecha": celdas[4].get_text(strip=True) if len(celdas) > 4 else "",
+                    "url": "https://seace.gob.pe"
                 })
-            time.sleep(2)
+            time.sleep(1.5)
         except Exception as e:
-            print(f"  [SEACE {depto}] Error: {e}")
-    return convs
-
-def obtener_compras_menores():
-    convs = []
-    try:
-        url = "https://comprasmenores.seace.gob.pe/Modulos/BancoPropuestas/ListarProcesos.aspx"
-        r = requests.get(url, timeout=20, headers={"User-Agent":"Mozilla/5.0"})
-        soup = BeautifulSoup(r.text, "html.parser")
-        filas = soup.select("table tr")[1:50]
-        print(f"  Compras Menores: {len(filas)} filas")
-        for fila in filas:
-            celdas = fila.find_all("td")
-            if len(celdas) < 3:
-                continue
-            texto = " ".join(c.get_text(strip=True) for c in celdas)
-            region = next((d for d in DEPARTAMENTOS if d.lower() in texto.lower()), None)
-            if not region:
-                continue
-            objeto = celdas[2].get_text(strip=True)
-            if not coincide(objeto):
-                continue
-            convs.append({
-                "fuente": "Compras Menores",
-                "region": region,
-                "numero": celdas[0].get_text(strip=True),
-                "entidad": celdas[1].get_text(strip=True),
-                "objeto": objeto,
-                "monto": celdas[3].get_text(strip=True) if len(celdas) > 3 else "",
-                "fecha": celdas[4].get_text(strip=True) if len(celdas) > 4 else datetime.now().strftime("%d/%m/%Y"),
-                "url": url,
-            })
-    except Exception as e:
-        print(f"  [Compras Menores] Error: {e}")
+            print(f"[SEACE {region}] {e}")
     return convs
 
 def obtener_peru_compras():
     convs = []
     try:
-        url = "https://www.perucompras.gob.pe/convocatorias/listarConvocatoriasVigentes.do"
-        r = requests.get(url, timeout=20, headers={"User-Agent":"Mozilla/5.0"})
+        r = requests.get("https://www.perucompras.gob.pe/convocatorias/listarConvocatoriasVigentes.do", timeout=20, headers={"User-Agent": "Mozilla/5.0"})
         soup = BeautifulSoup(r.text, "html.parser")
-        filas = soup.select("table tr")[1:50]
-        print(f"  Peru Compras: {len(filas)} filas")
-        for fila in filas:
+        for fila in soup.select("table tr")[1:40]:
             celdas = fila.find_all("td")
-            if len(celdas) < 2:
-                continue
+            if len(celdas) < 2: continue
             entidad = celdas[0].get_text(strip=True)
-            objeto  = celdas[1].get_text(strip=True)
-            region  = next((d for d in DEPARTAMENTOS if d.lower() in entidad.lower()), None)
-            if not region or not coincide(objeto):
-                continue
+            objeto = celdas[1].get_text(strip=True)
+            region = next((reg for reg in REGIONES if reg.lower() in entidad.lower()), None)
+            if not region or not coincide(objeto): continue
             convs.append({
-                "fuente": "Peru Compras",
+                "fuente": "Perú Compras",
                 "region": region,
                 "numero": celdas[2].get_text(strip=True) if len(celdas) > 2 else "",
                 "entidad": entidad,
                 "objeto": objeto,
                 "monto": celdas[3].get_text(strip=True) if len(celdas) > 3 else "",
-                "fecha": celdas[4].get_text(strip=True) if len(celdas) > 4 else datetime.now().strftime("%d/%m/%Y"),
-                "url": "https://www.perucompras.gob.pe",
+                "fecha": celdas[4].get_text(strip=True) if len(celdas) > 4 else "",
+                "url": "https://www.perucompras.gob.pe"
             })
     except Exception as e:
-        print(f"  [Peru Compras] Error: {e}")
+        print(f"[PerúCompras] {e}")
     return convs
 
 MINERAS = [
-    {"nombre":"Southern Peru Copper","url":"https://www.southernperu.com/Proveedores/Convocatorias","region":"Moquegua"},
-    {"nombre":"Antapaccay Glencore","url":"https://www.antapaccay.com.pe/proveedores","region":"Cusco"},
-    {"nombre":"Las Bambas MMG","url":"https://www.lasbambas.com/proveedores","region":"Cusco"},
-    {"nombre":"Cerro Verde Freeport","url":"https://www.cerroverde.pe/proveedores/convocatorias","region":"Arequipa"},
-    {"nombre":"Minsur San Rafael","url":"https://www.minsur.com/proveedores","region":"Puno"},
-    {"nombre":"Tia Maria Anglo American","url":"https://www.angloamerican.com/peru/proveedores","region":"Arequipa"},
-    {"nombre":"Shougang Hierro Peru","url":"https://www.shougang.com.pe/proveedores","region":"Arequipa"},
-    {"nombre":"Aruntani","url":"https://www.aruntani.com.pe/proveedores","region":"Puno"},
+    {"nombre": "Southern Peru", "url": "https://www.southernperu.com/Proveedores/Convocatorias", "region": "Moquegua"},
+    {"nombre": "Antapaccay", "url": "https://www.antapaccay.com.pe/proveedores", "region": "Cusco"},
+    {"nombre": "Las Bambas", "url": "https://www.lasbambas.com/proveedores", "region": "Cusco"},
+    {"nombre": "Cerro Verde", "url": "https://www.cerroverde.pe/proveedores/convocatorias", "region": "Arequipa"},
+    {"nombre": "Minsur", "url": "https://www.minsur.com/proveedores", "region": "Puno"}
 ]
 
 def obtener_mineras():
     convs = []
     for m in MINERAS:
         try:
-            r = requests.get(m["url"], timeout=20, headers={"User-Agent":"Mozilla/5.0"})
+            r = requests.get(m["url"], timeout=20, headers={"User-Agent": "Mozilla/5.0"})
             soup = BeautifulSoup(r.text, "html.parser")
-            items = soup.select(".convocatoria,.licitacion,.tender,.procurement,article,.card,.item")
-            for item in items[:15]:
+            items = soup.select(".convocatoria,.licitacion,.tender,article,.card")
+            for item in items[:10]:
                 texto = item.get_text(separator=" ", strip=True)
-                if len(texto) < 15 or not coincide(texto):
-                    continue
+                if len(texto) < 10 or not coincide(texto): continue
                 link = item.find("a")
                 href = link["href"] if link and link.get("href") else m["url"]
                 if href.startswith("/"):
@@ -179,118 +138,90 @@ def obtener_mineras():
                     "objeto": texto[:200],
                     "monto": "",
                     "fecha": datetime.now().strftime("%d/%m/%Y"),
-                    "url": href,
+                    "url": href
                 })
             time.sleep(1)
         except Exception as e:
-            print(f"  [{m['nombre']}] Error: {e}")
+            print(f"[{m['nombre']}] {e}")
     return convs
 
 def enviar_email(nuevas):
-    if not EMAIL_REMITENTE:
-        return
-    filas = ""
-    for c in nuevas:
-        filas += (
-            f"<tr>"
-            f"<td style='padding:8px;border-bottom:1px solid #eee;font-size:12px'><b>{c['fuente']}</b></td>"
-            f"<td style='padding:8px;border-bottom:1px solid #eee;font-size:12px'>{c['region']}</td>"
-            f"<td style='padding:8px;border-bottom:1px solid #eee;font-size:12px'>{c['entidad']}</td>"
-            f"<td style='padding:8px;border-bottom:1px solid #eee;font-size:12px'>{c['objeto'][:120]}</td>"
-            f"<td style='padding:8px;border-bottom:1px solid #eee;font-size:12px'>{c.get('monto','')}</td>"
-            f"<td style='padding:8px;border-bottom:1px solid #eee;font-size:12px'><a href='{c['url']}' style='color:#185FA5'>Ver</a></td>"
-            f"</tr>"
-        )
-    cuerpo = (
-        "<html><body style='font-family:Arial,sans-serif;max-width:900px;margin:auto'>"
-        "<div style='background:#185FA5;color:white;padding:20px;border-radius:8px 8px 0 0'>"
-        f"<h2 style='margin:0'>🔔 {len(nuevas)} nueva(s) convocatoria(s) Zona Sur</h2>"
-        f"<p style='margin:6px 0 0;opacity:.85'>{datetime.now().strftime('%d/%m/%Y %H:%M')} | SEACE · Compras Menores · Peru Compras · Mineras</p>"
-        "</div>"
-        "<div style='border:1px solid #ddd;border-top:none;padding:16px;border-radius:0 0 8px 8px'>"
-        "<table style='width:100%;border-collapse:collapse'>"
-        "<thead style='background:#f5f5f5'><tr>"
-        "<th style='padding:8px;text-align:left;font-size:12px'>Fuente</th>"
-        "<th style='padding:8px;text-align:left;font-size:12px'>Region</th>"
-        "<th style='padding:8px;text-align:left;font-size:12px'>Entidad</th>"
-        "<th style='padding:8px;text-align:left;font-size:12px'>Objeto</th>"
-        "<th style='padding:8px;text-align:left;font-size:12px'>Monto</th>"
-        "<th style='padding:8px;text-align:left;font-size:12px'>Link</th>"
-        f"</tr></thead><tbody>{filas}</tbody></table>"
-        "<p style='font-size:11px;color:#999;margin-top:16px'>Monitor automatico Zona Sur del Peru</p>"
-        "</div></body></html>"
+    if not EMAIL_REMITENTE: return
+    filas = "".join(
+        f"<tr>"
+        f"<td style='padding:8px;border-bottom:1px solid #eee'>{c['fuente']}</td>"
+        f"<td style='padding:8px;border-bottom:1px solid #eee'>{c['region']}</td>"
+        f"<td style='padding:8px;border-bottom:1px solid #eee'>{c['entidad']}</td>"
+        f"<td style='padding:8px;border-bottom:1px solid #eee'>{c['objeto'][:100]}</td>"
+        f"<td style='padding:8px;border-bottom:1px solid #eee'><a href='{c['url']}'>Ver</a></td>"
+        f"</tr>" for c in nuevas
     )
+    cuerpo = f"""<html><body style='font-family:Arial,sans-serif'>
+    <div style='background:#185FA5;color:white;padding:20px;border-radius:8px 8px 0 0'>
+    <h2>🔔 {len(nuevas)} nueva(s) convocatoria(s) — Zona Sur</h2>
+    <p>{datetime.now().strftime('%d/%m/%Y %H:%M')}</p></div>
+    <div style='border:1px solid #ddd;padding:20px'>
+    <table style='width:100%;border-collapse:collapse;font-size:13px'>
+    <thead style='background:#f5f5f5'><tr>
+    <th style='padding:8px;text-align:left'>Fuente</th>
+    <th style='padding:8px;text-align:left'>Región</th>
+    <th style='padding:8px;text-align:left'>Entidad</th>
+    <th style='padding:8px;text-align:left'>Objeto</th>
+    <th style='padding:8px;text-align:left'>Link</th>
+    </tr></thead><tbody>{filas}</tbody></table></div></body></html>"""
+    
     msg = MIMEMultipart("alternative")
     msg["Subject"] = f"🔔 {len(nuevas)} convocatoria(s) Zona Sur — {datetime.now().strftime('%d/%m/%Y %H:%M')}"
     msg["From"] = EMAIL_REMITENTE
-    msg["To"]   = EMAIL_DESTINATARIO
+    msg["To"] = EMAIL_DESTINATARIO
     msg.attach(MIMEText(cuerpo, "html"))
     try:
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as s:
             s.login(EMAIL_REMITENTE, EMAIL_PASSWORD)
             s.sendmail(EMAIL_REMITENTE, EMAIL_DESTINATARIO, msg.as_string())
-        print(f"  [Email] Enviado — {len(nuevas)} convocatorias")
+        print(f"[Email] Enviado con éxito.")
     except Exception as e:
-        print(f"  [Email] Error: {e}")
+        print(f"[Email] Error: {e}")
 
 def enviar_whatsapp(nuevas):
-    if not WA_PHONE or not WA_APIKEY or WA_APIKEY == "0":
+    if not WA_PHONE or WA_APIKEY == "0": 
+        print("[WhatsApp] Saltado (No configurado aún).")
         return
-    resumen = "\n".join(
-        f"- {c['fuente']} | {c['region']}: {c['objeto'][:60]}..."
-        for c in nuevas[:5]
-    )
-    if len(nuevas) > 5:
-        resumen += f"\n...y {len(nuevas)-5} mas."
-    msg = (
-        f"🔔 {len(nuevas)} convocatoria(s) Zona Sur\n"
-        f"{datetime.now().strftime('%d/%m/%Y %H:%M')}\n\n"
-        f"{resumen}\n\nRevisa tu email para el detalle."
-    )
-    url = (
-        f"https://api.callmebot.com/whatsapp.php"
-        f"?phone={WA_PHONE}&text={requests.utils.quote(msg)}&apikey={WA_APIKEY}"
-    )
+    resumen = "\n".join(f"• {c['fuente']} | {c['region']}: {c['objeto'][:60]}..." for c in nuevas[:5])
+    if len(nuevas) > 5: resumen += f"\n...y {len(nuevas)-5} más."
+    msg = f"🔔 *{len(nuevas)} convocatoria(s) — Zona Sur*\n{datetime.now().strftime('%d/%m/%Y %H:%M')}\n\n{resumen}"
+    url = f"https://api.callmebot.com/whatsapp.php?phone={WA_PHONE}&text={requests.utils.quote(msg)}&apikey={WA_APIKEY}"
     try:
         r = requests.get(url, timeout=15)
-        print(f"  [WhatsApp] {'OK' if r.status_code==200 else 'Error '+str(r.status_code)}")
+        print(f"[WhatsApp] Enviado. Status: {r.status_code}")
     except Exception as e:
-        print(f"  [WhatsApp] Error: {e}")
+        print(f"[WhatsApp] Error: {e}")
 
 def main():
-    print("=" * 55)
-    print(f"  Monitor Zona Sur — {datetime.now().strftime('%d/%m/%Y %H:%M')}")
-    print("=" * 55)
+    print(f"\nIniciando Monitor Zona Sur — {datetime.now().strftime('%d/%m/%Y %H:%M')}\n")
     vistos = cargar_vistos()
-    print(f"\n[1/4] SEACE — {len(DEPARTAMENTOS)} departamentos...")
+    
+    print("[1/3] Consultando SEACE...")
     seace = obtener_seace()
-    print(f"\n[2/4] Compras Menores del Estado...")
-    menores = obtener_compras_menores()
-    print(f"\n[3/4] Peru Compras...")
+    print("[2/3] Consultando Perú Compras...")
     peru = obtener_peru_compras()
-    print(f"\n[4/4] Sector Minero — {len(MINERAS)} empresas...")
+    print("[3/3] Consultando Páginas de Mineras...")
     minero = obtener_mineras()
-    todas = seace + menores + peru + minero
+    
+    todas = seace + peru + minero
     nuevas = [c for c in todas if id_conv(c) not in vistos]
-    print(f"\n{'='*55}")
-    print(f"  Consultadas: {len(todas)} | Nuevas: {len(nuevas)}")
-    print(f"{'='*55}\n")
+    print(f"\nResultados: {len(nuevas)} nuevas detectadas de {len(todas)} encontradas.")
+    
     if nuevas:
         enviar_email(nuevas)
         enviar_whatsapp(nuevas)
-        for c in nuevas:
-            vistos.add(id_conv(c))
+        for c in nuevas: vistos.add(id_conv(c))
         guardar_vistos(vistos)
-    else:
-        print("Sin convocatorias nuevas.")
+    
     os.makedirs("dashboard", exist_ok=True)
     with open("dashboard/data.json", "w", encoding="utf-8") as f:
-        json.dump({
-            "actualizado": datetime.now().isoformat(),
-            "total": len(todas),
-            "convocatorias": todas[-200:]
-        }, f, ensure_ascii=False, indent=2)
-    print("Completado.\n")
+        json.dump({"actualizado": datetime.now().isoformat(), "total": len(todas), "convocatorias": todas[-100:]}, f, ensure_ascii=False, indent=2)
+    print("Proceso Finalizado.\n")
 
 if __name__ == "__main__":
     main()
