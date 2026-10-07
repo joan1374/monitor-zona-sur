@@ -1,6 +1,6 @@
 {
-  "actualizado": "2026-10-07T03:48:15.088305",
-  "total": 1,
+  "actualizado": "2026-10-07T18:29:09.275742",
+  "total": 11,
   "convocatorias": [
     {
       "fuente": "Antapaccay",
@@ -11,6 +11,106 @@
       "monto": "",
       "fecha": "07/10/2026",
       "url": "https://www.antapaccay.com.pe/"
+    },
+    {
+      "fuente": "Las Bambas",
+      "region": "Cusco",
+      "numero": "",
+      "entidad": "Las Bambas",
+      "objeto": "Registro para Proveedores",
+      "monto": "",
+      "fecha": "07/10/2026",
+      "url": "https://www.lasbambas.com/proveedores-registro-de-proveedores"
+    },
+    {
+      "fuente": "Las Bambas",
+      "region": "Cusco",
+      "numero": "",
+      "entidad": "Las Bambas",
+      "objeto": "Instrucciones para Entrega de Bienes",
+      "monto": "",
+      "fecha": "07/10/2026",
+      "url": "https://www.lasbambas.com/instrucciones-generales-para-entrega-de-bienes"
+    },
+    {
+      "fuente": "Las Bambas",
+      "region": "Cusco",
+      "numero": "",
+      "entidad": "Las Bambas",
+      "objeto": "Instrucciones generales para la entrega de servicios",
+      "monto": "",
+      "fecha": "07/10/2026",
+      "url": "https://www.lasbambas.com/instrucciones-generales-para-entrega-de-servicios"
+    },
+    {
+      "fuente": "Las Bambas",
+      "region": "Cusco",
+      "numero": "",
+      "entidad": "Las Bambas",
+      "objeto": "Información de Interés",
+      "monto": "",
+      "fecha": "07/10/2026",
+      "url": "https://www.lasbambas.com/proveedores-informacion-de-interes"
+    },
+    {
+      "fuente": "Las Bambas",
+      "region": "Cusco",
+      "numero": "",
+      "entidad": "Las Bambas",
+      "objeto": "Instrucciones de Atención y Pago de Facturas",
+      "monto": "",
+      "fecha": "07/10/2026",
+      "url": "https://www.lasbambas.com/proveedores-instrucciones-de-atencion-y-pago-de-facturas"
+    },
+    {
+      "fuente": "Las Bambas",
+      "region": "Cusco",
+      "numero": "",
+      "entidad": "Las Bambas",
+      "objeto": "Mi Acceso a Las Bambas",
+      "monto": "",
+      "fecha": "07/10/2026",
+      "url": "https://www.lasbambas.com/proveedores-mi-acceso-las-bambas"
+    },
+    {
+      "fuente": "Las Bambas",
+      "region": "Cusco",
+      "numero": "",
+      "entidad": "Las Bambas",
+      "objeto": "Directorio de Proveedores Locales",
+      "monto": "",
+      "fecha": "07/10/2026",
+      "url": "https://www.lasbambas.com/userfiles/cms/pagina/documento/directorio-empresarios-locales.pdf"
+    },
+    {
+      "fuente": "Las Bambas",
+      "region": "Cusco",
+      "numero": "",
+      "entidad": "Las Bambas",
+      "objeto": "Nuevo Servicio Radio P25",
+      "monto": "",
+      "fecha": "07/10/2026",
+      "url": "https://www.lasbambas.com/proveedores-nuevo-servicio-radio-p25"
+    },
+    {
+      "fuente": "Las Bambas",
+      "region": "Cusco",
+      "numero": "",
+      "entidad": "Las Bambas",
+      "objeto": "Compliance y Ética Empresarial",
+      "monto": "",
+      "fecha": "07/10/2026",
+      "url": "https://www.lasbambas.com/proveedores-compliance-y-etica-empresarial"
+    },
+    {
+      "fuente": "Las Bambas",
+      "region": "Cusco",
+      "numero": "",
+      "entidad": "Las Bambas",
+      "objeto": "Mi Sistema Integrado SHE",
+      "monto": "",
+      "fecha": "07/10/2026",
+      "url": "https://www.lasbambas.com/proveedores-mi-sistema-integrado-she"
     }
   ]
 }
